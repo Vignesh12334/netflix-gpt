@@ -2,13 +2,21 @@ import { useRef, useState } from "react";
 import { Header } from "./Header";
 import { checkValidateData } from "../utils/Validate";
 import { signUpValidation } from "../utils/Validate";
-import {createUserWithEmailAndPassword } from "firebase/auth";
-import {auth} from '../utils/firebase'
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { auth } from "../utils/firebase";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 
 export const Login = () => {
   const [isSignInFrom, setIsSignForm] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
   const [signUpError, setSignUpError] = useState(null);
+
+
+  const navigate = useNavigate();
 
   const email = useRef(null);
   const password = useRef(null);
@@ -36,23 +44,45 @@ export const Login = () => {
       }
     }
 
-   if(!isSignInFrom) {
-       //signUp
-       createUserWithEmailAndPassword(auth, email.current.value, password.current.value)
-  .then((userCredential) => {
-    // Signed up 
-    const user = userCredential.user;
-    console.log("User : ",  user)
-    // ...
-  })
-  .catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    setErrorMessage(errorCode +"-" +  errorMessage);
-  });
-   } else{ 
-    // signIn
-   }
+    if (!isSignInFrom) {
+      //signUp
+      createUserWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
+        .then((userCredential) => {
+          // Signed up
+          const user = userCredential.user;
+          console.log("User : ", user);
+          navigate("/browse")
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setSignUpError(errorCode , "-" , errorMessage);
+         
+        });
+    } else {
+      // signIn
+      signInWithEmailAndPassword(auth, email.current.value, password.current.value)
+        .then((userCredential) => {
+          // Signed in
+
+          const user = userCredential.user;
+          // console.log(user)
+          navigate("/browse")
+          
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrorMessage(errorCode ,'-', errorMessage)
+
+        });
+    }
   };
 
   const handleSignUp = () => {
